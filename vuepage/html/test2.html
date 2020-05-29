@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <div id="name"></div>
+
+</body>
+<script>
+    // 这是一个女主播的对象
+    let yyNvzhuo = {
+        name:"女疯子",
+        sex:"女",
+        age:16,
+        msg:"打游戏中"
+    }
+    //中间件
+    function middle(){
+    //存消息用
+        this.list = []
+    }
+    //订阅 get
+    middle.prototype.get = function(fn){
+        this.list.push(fn)
+    }
+    // 发布 set 执行 我们页面的更新逻辑
+    middle.prototype.set = function(){
+        this.list.forEach(fn=>{
+            fn()
+        })
+    }
+    middle.fn = null;
+    // 订阅者
+    //首先我要监听这个mm 
+    // 对数据进行监听
+    function observe(data) {
+        if (!data || typeof data !== 'object') {
+            return;
+        }
+        Object.keys(data).forEach(key => {
+            defineReactive(data, key, data[key])
+        })
+    }
+    /**
+     * data 对象
+     * key 属性名
+     * val 属性值
+    */
+    var newMiddle = new middle();
+    function defineReactive(data, key, val) {
+            observe(val); // 递归到最底层 val 不是对象时候 就是最底层了            
+            Object.defineProperty(data, key, {
+                enumerable: true,
+                configurable: true,
+                get: function () {
+                    console.log(val,'看女主播的信息')
+                    newMiddle.get(newMiddle.fn)
+                    return val;
+                },
+                set: function (newVal) {
+                    console.log(val,'女主播的信息改变了')
+                    newMiddle.set()
+                    val = newVal;    
+                }
+            });
+        }
+    // observe(yyNvzhuo) //对女主播进行监听，这时候女主播的数据改变 或者 获取 会触发 get 或 set
+    /*
+    *观察女主播这个对象，当其变化时候做出反应
+    *1.获取女主播这个对象属性
+    *2.选择一个属性
+    *3.事件
+    */
+    function watcher(obj,key,fn){
+        this.obj = obj;
+        this.key = key;
+        this.fn = fn;
+    }
+    /**
+     * data 对象数据
+     * 要绑定的元素
+     * 要关注的属性名称
+    */
+    function mvvm(data,el,key){
+        this.data = data;
+        observe(data)
+        el.innerHTML = data[key]
+    }
+    
+    var ele = document.querySelector('#name');
+    let htmlnvzhubo = new mvvm(yyNvzhuo,ele,'msg')
+    middle.fn = function(){
+        ele.innerHTML = '改变了'
+    }
+</script>
+</html>

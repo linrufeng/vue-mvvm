@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>双向绑定</title>
+</head>
+
+<body>
+    <h1 id="name"></h1>
+</body>
+<script>
+    /**
+     * 
+     * data 对象
+     * key 属性名
+     * val 属性值
+    */
+    function defineReactive(data, key, val) {
+        observe(val); // 递归到最底层 val 不是对象时候 就是最底层了
+        var deps = new Dep();
+        console.log(key, deps)
+        Object.defineProperty(data, key, {
+            enumerable: true,
+            configurable: true,
+            get: function () {
+                if (Dep.target) { // 判断是否需要添加订阅者
+                    deps.addSub(Dep.target); // 在这里添加一个订阅者
+                }
+                return val;
+            },
+            set: function (newVal) {
+                val = newVal;                
+                deps.notify(); //当值改变的时候 触发
+            }
+        });
+    }
+    // 把数据进行监听
+    function observe(data) {
+        if (!data || typeof data !== 'object') {
+            return;
+        }
+        let cont = 0;
+        Object.keys(data).forEach(key => {
+            cont++
+            console.log(cont)
+            defineReactive(data, key, data[key])
+        })
+    }
+    /**
+     * 
+     * 
+     * 
+    */
+    function Dep() {
+        this.subs = [];
+    }
+    Dep.prototype = {
+        addSub: function (sub) {
+            this.subs.push(sub);
+        },
+        notify: function () {
+            this.subs.forEach(function (item) {
+                // 
+                item.update();
+            });
+        }
+    };
+    Dep.target = null;
+    /**
+     * 
+     * 
+     * 
+     * 
+     * 
+    */
+    function Watcher(vm, exp, cb) {
+        this.cb = cb; // 回调函数
+        this.vm = vm; // selfvue 整个函数 内部含有当前的值 用来做更新对比
+        this.exp = exp; // 属性名称
+        this.value = this.get();  // 将自己添加到订阅器的操作 同时返回 一个当前属性的值
+    }
+
+    Watcher.prototype = {
+        update: function () {
+            this.run();
+        },
+        run: function () {
+            var value = this.vm.data[this.exp];
+            var oldVal = this.value;
+            if (value !== oldVal) {
+                this.value = value;
+                this.cb.call(this.vm, value, oldVal);
+            }
+        },
+        get: function () {
+            Dep.target = this;  // 缓存自己
+            var value = this.vm.data[this.exp]  // 强制执行监听器里的get函数  也可以或是监听哪个值
+            // 为了把 它 
+            Dep.target = null;  // 释放自己
+            return value;
+        }
+    };
+    /**
+     * 
+     * 
+     * 
+     * 
+    */
+    function SelfVue(data, el, exp) {
+        this.data = data;
+        observe(data); // 添加了这个对象的监听 但是并没有和 属性绑定在
+        el.innerHTML = this.data[exp];  //  这个方法 触发了 属性监听的get 方法 并把内容注入到节点里面
+
+        /// 实现功能 对指定的内容进行监听，把更新的内容更换出来
+        new Watcher(this, exp, function (value) {
+            el.innerHTML = value;
+        });
+        //把 this 对象返回 this对象 包含 了 data 
+        return this;
+    }
+
+    var ele = document.querySelector('#name');
+
+    var selfVue = new SelfVue({
+        name: 'hello world',
+        age: 12
+    }, ele, 'age');
+
+    // setTimeout(function () {
+    //     console.log('name值改变了');
+    //     selfVue.data.name = 'canfoo';
+    // }, 2000);
+    // let my = {
+    //     name: "linrufeng"
+    // }
+    // Object.defineProperty(my, 'name', {
+    //     get: function () {
+    //         return 'li'
+    //     },
+    //     set: function (val) {
+    //         console.log(val)
+    //     }
+    // })
+
+
+
+</script>
+
+
+</html>
