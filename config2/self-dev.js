@@ -7,6 +7,8 @@ const config = base({
 })
 config
 .mode('development'); 
+config
+.devtool('source-map')
 let compiler = webpack(config.toConfig())
 const server = new WebpackDevServer(compiler,{
     open:true,  

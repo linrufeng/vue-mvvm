@@ -1,8 +1,10 @@
 import MyVue from './../seflvue/index.js'
 
-new MyVue({
+window.myvue = new MyVue({
     el:'#app',
     data:{
-        name:"李林森"
+        name:"李林森",
+        age:19
     }    
 })
+

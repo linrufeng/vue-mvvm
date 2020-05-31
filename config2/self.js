@@ -7,14 +7,11 @@ module.exports =(option)=>{
 
     config
         .entry('app')
-        .add(path.resolve(projectRoot,option.entry))
-        .end()    
-    .output
-        .path(path.resolve(projectRoot,option.outer))
-        .filename('js/[name].js');
-
-    config
-        .mode('development');  
+            .add(path.resolve(projectRoot,option.entry))
+            .end()
+        .output
+            .path(path.resolve(projectRoot,option.outer))
+            .filename('js/[name].js');
       
     config.module
             .rule('js')
